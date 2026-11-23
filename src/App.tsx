@@ -39,7 +39,7 @@ function LogoMark() {
 }
 
 function ConnectionChip() {
-  const { status } = useApp();
+  const { status, feed } = useApp();
   const map: Record<string, { cls: string; label: string }> = {
     idle: { cls: 'chip', label: 'IDLE' },
     connecting: { cls: 'chip chip-connecting', label: 'CONNECTING' },
@@ -50,7 +50,7 @@ function ConnectionChip() {
   };
   const m = map[status] ?? map.idle;
   return (
-    <span className={m.cls}><span className="dot" />{m.label}</span>
+    <span className={m.cls} title={feed}><span className="dot" />{m.label}</span>
   );
 }
 
@@ -76,7 +76,7 @@ function AccountChip() {
 function Shell() {
   const [page, setPage] = useState<Page>('signal');
   const now = useNow(1000);
-  const { settings } = useApp();
+  const { settings, feed } = useApp();
   const utc = new Date(now).toUTCString().slice(17, 25);
 
   // Keyboard shortcuts: 1–4 switch pages
@@ -154,7 +154,7 @@ function Shell() {
           {page === 'bot' && <BotPage />}
           {page === 'guide' && <Guide />}
           <div className="status-foot" style={{ marginTop: 16 }}>
-            <span>FEED wss://ws.derivws.com · app_id <b>{settings.appId}</b></span>
+            <span>FEED <b>{feed}</b>{settings.appId ? <> · app_id <b>{settings.appId}</b></> : null}</span>
             <span>PREDICTIONS ARE PROBABILITIES, NOT PROMISES</span>
             <span>NOT FINANCIAL ADVICE</span>
           </div>

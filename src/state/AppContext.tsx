@@ -32,7 +32,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  appId: '1089',
+  appId: '', // Deriv App ID from developers.deriv.com (PAT-type app) — required only for authorized demo/real trading; public market data needs no App ID
   token: '',
   rememberToken: false,
   symbol: 'R_100',
@@ -55,6 +55,8 @@ interface AppContextValue {
   params: StrategyParams;
 
   status: DerivWsStatus;
+  /** Human-readable label of the Deriv feed currently in use (public Options API or a legacy fallback). */
+  feed: string;
   symbols: ActiveSymbol[];
   symbolsLoading: boolean;
   selectedSymbol: ActiveSymbol | null;
@@ -120,6 +122,7 @@ const FALLBACK_SYMBOLS: ActiveSymbol[] = [
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(() => ({ ...DEFAULT_SETTINGS, ...loadJSON(STORAGE_KEYS.settings, DEFAULT_SETTINGS) }));
   const [status, setStatus] = useState<DerivWsStatus>('idle');
+  const [feed, setFeed] = useState<string>('Deriv Options API (public)');
   const [symbols, setSymbols] = useState<ActiveSymbol[]>(FALLBACK_SYMBOLS);
   const [symbolsLoading, setSymbolsLoading] = useState(false);
   const [m1Candles, setM1Candles] = useState<Candle[]>([]);
@@ -197,10 +200,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const client = new DerivClient(settings.appId);
     clientRef.current = client;
     const offStatus = client.onStatus(setStatus);
+    const offEndpoint = client.onEndpoint(setFeed);
     const offError = client.onError(msg => toast('warn', msg));
     client.connect();
     return () => {
       offStatus();
+      offEndpoint();
       offError();
       unsubRef.current.forEach(u => u().catch(() => {}));
       unsubRef.current = [];
@@ -528,7 +533,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!token) { toast('error', 'Enter a Deriv API token'); return; }
     setAuthorizing(true);
     try {
-      const info = await client.authorize(token);
+      const prefer = settingsRef.current.botMode === 'live' ? 'real' : 'demo';
+      const info = await client.authorize(token, prefer);
       setAccount(info);
       toast('success', `Authorized ${info.loginid} · ${info.isVirtual ? 'DEMO' : 'REAL'} · ${info.currency}`);
       // Live balance pushes — replace any previous subscription
@@ -582,7 +588,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const value: AppContextValue = {
     settings, updateSettings, params,
-    status, symbols, symbolsLoading, selectedSymbol, selectSymbol,
+    status, feed, symbols, symbolsLoading, selectedSymbol, selectSymbol,
     m1Candles, m5Candles, lastTickAt, signal, fetchCandles,
     account, authorizing, authorize, logout,
     botArmed, armBot, disarmBot, journal, clearJournal, risk, resetRisk, paperBalance, resetPaperBalance, dayBaseline,

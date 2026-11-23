@@ -96,9 +96,26 @@ export default function BotPage() {
             {!account ? (
               <>
                 <div className="field">
+                  <label htmlFor="deriv-app-id">
+                    Deriv App ID
+                    <span className="hint"><a href="https://developers.deriv.com/" target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)' }}>developers.deriv.com → PAT-type app <ExternalLink size={9} style={{ verticalAlign: '-1px' }} /></a></span>
+                  </label>
+                  <input
+                    id="deriv-app-id"
+                    type="text"
+                    className="input"
+                    placeholder="Your PAT-type App ID — leave blank for paper-only use"
+                    value={settings.appId}
+                    onChange={e => updateSettings({ appId: e.target.value.replace(/[^0-9a-zA-Z_-]/g, '') })}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <div style={{ fontSize: 9.5, color: '#5d6c8f', marginTop: 4 }}>Required together with the PAT token. Deriv retired legacy App IDs for the new Options API.</div>
+                </div>
+                <div className="field">
                   <label htmlFor="deriv-token">
-                    Deriv API token
-                    <span className="hint"><a href="https://app.deriv.com/account/api-token" target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)' }}>create one <ExternalLink size={9} style={{ verticalAlign: '-1px' }} /></a></span>
+                    Deriv PAT token
+                    <span className="hint"><a href="https://developers.deriv.com/" target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)' }}>create pat_… token <ExternalLink size={9} style={{ verticalAlign: '-1px' }} /></a></span>
                   </label>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <div style={{ position: 'relative', flex: 1 }}>
@@ -108,7 +125,7 @@ export default function BotPage() {
                         type="password"
                         className="input"
                         style={{ paddingLeft: 33 }}
-                        placeholder={mode === 'live' ? 'Real-account token (read + trade scope)' : 'Demo-account token'}
+                        placeholder={mode === 'live' ? 'pat_… token with REAL account scope' : 'pat_… token for your DEMO account'}
                         value={tokenInput}
                         onChange={e => setTokenInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') authorize(tokenInput); }}
@@ -126,7 +143,7 @@ export default function BotPage() {
                   <input type="checkbox" className="toggle" style={{ width: 34, height: 19 }} checked={settings.rememberToken} onChange={e => updateSettings({ rememberToken: e.target.checked })} />
                   Remember token on this device (stored in browser localStorage)
                 </label>
-                <div style={{ fontSize: 9.5, color: '#5d6c8f', marginTop: 6 }}>Scope required: <b>read + trade</b>. The token is sent only to Deriv over WSS — never to any third party. Paper mode needs no token.</div>
+                <div style={{ fontSize: 9.5, color: '#5d6c8f', marginTop: 6 }}>Token type: <b>PAT (pat_…)</b> from a <b>PAT-type app</b> on developers.deriv.com · scopes <b>read + trade</b>. Sent only to Deriv (HTTPS + WSS) — never to any third party. Paper mode needs no token or App ID.</div>
               </>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'var(--panel-c)', border: '1px solid var(--border)', borderRadius: 13, padding: '12px 14px' }}>

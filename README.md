@@ -12,7 +12,7 @@ A complete, honest implementation of the **M1 NEXT-CANDLE** strategy: *Liquidity
 | --- | --- | --- |
 | Strategy engine | `src/lib/strategy.ts` | The exact 8-condition RISE/FALL checklist, sideways-market hard filters, 0–8 scoring, full/strong/weak classification. **No look-ahead: evaluates completed candles only.** |
 | Indicators | `src/lib/indicators.ts` | EMA, RSI (Wilder), ATR (Wilder), ADX/+DI/−DI (Wilder) — pure functions. |
-| Deriv client | `src/lib/derivApi.ts` | WebSocket v3 client: `ticks_history` (snapshot + live `ohlc` stream), `active_symbols`, `authorize`, `balance`, `proposal` → `buy` (1-minute `CALL`=RISE / `PUT`=FALL), contract settlement tracking, auto-reconnect + ping. |
+| Deriv client | `src/lib/derivApi.ts` | Deriv **Options API** client: public market data via `wss://api.derivws.com/trading/v1/options/ws/public` (no auth) with automatic fallback to the legacy v3 feeds; `ticks_history` (snapshot + live `ohlc` stream), `active_symbols`, PAT-token auth (REST account lookup → single-use OTP WebSocket), `balance`, `proposal` → `buy` (1-minute `CALL`=RISE / `PUT`=FALL), contract settlement tracking, auto-reconnect with OTP re-mint, ping. |
 | Backtester | `src/lib/backtest.ts` | Walk-forward simulation on real candles; win/loss/tie accounting (ties lose, like Deriv), equity curve, per-hour breakdown, max drawdown, consecutive losses, 60/20/20 split with a parameter grid (EMA 7/9/12 × 18/21/26 × ADX 20/25) to expose overfitting. |
 | Risk engine | `src/lib/risk.ts` | Stake sizing (default 1% of balance), daily loss cap (3%), 3-consecutive-loss stop, one-open-contract rule, day rollover resets. Martingale deliberately absent. |
 | Terminal UI | `src/pages/*` | **Live Signal** (next-candle prediction, checklist, countdown, verified self-grading prediction log), **Backtest Lab** (up to 10,000 candles, CSV export of candles + trades), **Auto-Bot** (paper → Deriv demo → live, journaled), **Strategy Guide** (rules + break-even calculator). |
@@ -24,14 +24,15 @@ npm install
 npm run dev        # http://localhost:5173  (or npm run build && npm run preview)
 ```
 
-No configuration is required for the Live Signal page — the terminal streams public candle data from Deriv's WebSocket API (`wss://ws.derivws.com`) directly in your browser.
+No configuration is required for the Live Signal page — the terminal streams public candle data from Deriv's Options API (`wss://api.derivws.com/trading/v1/options/ws/public`) directly in your browser. If the public Options endpoint is unreachable, it automatically falls back to the legacy feeds (`ws.derivws.com` → `ws.binaryws.com` → `wss.derivws.com`).
 
-Optional, for the Auto-Bot:
-1. Create a Deriv API token at <https://app.deriv.com/account/api-token> — scope **Read + Trade** (demo first!).
-2. Auto-Bot → *Deriv demo* → paste token → **Authorize** → arm the bot.
-3. Paper mode needs no token at all.
+Optional, for the Auto-Bot (demo or live execution):
+1. Log in at <https://developers.deriv.com/> and **register a PAT-type application** — this generates your own App ID. (Deriv retired legacy App IDs, including the public `1089` playground, for the new API.)
+2. In the dashboard, create a **PAT token** (`pat_…`) with scopes **read + trade** (demo first!).
+3. Auto-Bot → *Deriv demo* → enter your **App ID** and the **PAT token** → **Authorize** → arm the bot.
+4. Paper mode needs no token or App ID at all.
 
-The default `app_id` is `1089` (Deriv's public playground). Register your own app at <https://developers.deriv.com/> for anything serious and set it in the footer/settings flow.
+Under the hood the app lists your Options accounts via REST (`GET /trading/v1/options/accounts`), picks the matching demo/real account, mints a single-use OTP WebSocket URL (`POST …/accounts/{id}/otp`) and connects to it — the socket stays authenticated and re-mints a fresh OTP automatically on reconnect. Monetary fields are parsed as strings per Deriv's current API. Legacy `a1-…` tokens and the legacy `authorize` WebSocket call are no longer supported by Deriv.
 
 ## The strategy in one paragraph
 
