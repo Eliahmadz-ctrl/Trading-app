@@ -539,3 +539,20 @@ table.data tbody tr:hover { background: rgba(34, 211, 238, 0.04); }
   .utc-clock { display: none; }
   .signal-word { font-size: 30px; }
 }
+
+/* ═══ Signal message card ═══════════════════════════════════════════════ */
+.signal-message { border-left: 2px solid rgba(34,211,238,.35); }
+.sm-chip { font: 700 8px var(--mono); letter-spacing: .12em; color: var(--cyan); border: 1px solid rgba(34,211,238,.35); background: rgba(34,211,238,.06); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+.sm-bubble { background: #0d1626; border: 1px solid var(--border); border-left: 3px solid var(--cyan); border-radius: 12px; padding: 12px 14px; font-family: var(--mono); font-size: 11px; line-height: 1.8; color: #dce6fb; }
+.sm-bubble.bull { border-left-color: var(--bull); }
+.sm-bubble.bear { border-left-color: var(--bear); }
+.sm-line b { color: #fff; font-weight: 700; }
+.sm-title { font-size: 11.5px; letter-spacing: .02em; }
+.sm-code { color: var(--muted); }
+.sm-dir { font-weight: 700; font-size: 12px; }
+.sm-dir.bull { color: var(--bull); }
+.sm-dir.bear { color: var(--bear); }
+.sm-weak { color: var(--amber); font-size: 10px; }
+.sm-fine { color: #5d6c8f; font-size: 9px; margin-top: 4px; }
+.sm-copy-row { display: flex; gap: 12px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.sm-standby { color: var(--muted); font-size: 11px; padding: 16px 12px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; line-height: 1.6; }

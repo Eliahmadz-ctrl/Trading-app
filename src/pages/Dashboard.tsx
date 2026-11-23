@@ -8,6 +8,7 @@ import { useApp } from '../state/AppContext';
 import { useNow } from '../lib/useNow';
 import CandleChart from '../components/CandleChart';
 import ScoreRing from '../components/ScoreRing';
+import SignalMessage from '../components/SignalMessage';
 import { fmtPrice, fmtTimeHM, fmtPct, fmtNum, clamp } from '../lib/format';
 import type { SignalResult } from '../lib/types';
 
@@ -226,6 +227,9 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+
+        {/* ═══ Signal message — channel-style post ═══ */}
+        <SignalMessage />
 
         {/* ═══ Checklist ═══ */}
         <section className="panel panel-pad">
