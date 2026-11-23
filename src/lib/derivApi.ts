@@ -23,8 +23,12 @@ function toNum(v: unknown, fallback = 0): number {
 }
 
 export function normalizeCandle(raw: any): Candle {
+  // Deriv candle rows (ticks_history snapshot) put the bucket-start in `epoch`.
+  // Live `ohlc` pushes put the *tick* time in `epoch` and the bucket start in
+  // `open_time` — using `epoch` there appended a fake candle per tick (the
+  // "chart is ticks, not 1-minute candles" bug). Prefer `open_time` when present.
   return {
-    time: toNum(raw.epoch ?? raw.time),
+    time: toNum(raw.open_time ?? raw.epoch ?? raw.time),
     open: toNum(raw.open),
     high: toNum(raw.high),
     low: toNum(raw.low),
