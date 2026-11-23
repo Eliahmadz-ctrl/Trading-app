@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    strictPort: false,
+    strictPort: true, // fail loudly instead of silently drifting off 5173
     // Preview proxy: user's browser talks only to this origin; Deriv WS is browser-direct.
   },
   esbuild: {
